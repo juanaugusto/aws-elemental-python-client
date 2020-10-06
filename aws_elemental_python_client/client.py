@@ -41,6 +41,11 @@ class ElementalDelta(Elemental):
     def get_contents(self):
         return self.do_request('get', '/contents')
 
+    def find_content_by_name(self, name):
+        content = self.do_request('get', '/contents?name=%s' % name)
+        
+        pass
+
 
 class ElementalLive(Elemental):
     pass
