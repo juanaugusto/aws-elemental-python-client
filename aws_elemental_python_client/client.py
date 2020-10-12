@@ -1,7 +1,9 @@
+from collections import OrderedDict
 from urllib.parse import urlparse
 import hashlib
 import requests
 import time
+import xmltodict
 
 
 class Elemental:
@@ -41,11 +43,32 @@ class ElementalDelta(Elemental):
     def get_contents(self):
         return self.do_request('get', '/contents')
 
-    def find_content_by_name(self, name):
-        content = self.do_request('get', '/contents?name=%s' % name)
-        
-        pass
+    # status can be [complete, active]
+    def find_contents_by_name(self, name):
+        contents = self.do_request('get', '/contents?name=%s' % name)
 
+        try:
+            contents = xmltodict.parse(contents)['contents']['content']
+        except KeyError:
+            # It means that no content with matching name was found
+            return []
+
+        if type(contents) is OrderedDict:
+            contents = [contents]
+        
+        return [
+            {
+                'id': content['id'],
+                'name': content['name'],
+                'status': content['status']
+            }
+            for content in contents if content['name'] == name
+        ]
+
+    def delete_content(self, content_id):
+        self.do_request('delete', '/contents/%s' % content_id)
+
+            
 
 class ElementalLive(Elemental):
     pass
