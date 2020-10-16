@@ -6,6 +6,10 @@ import time
 import xmltodict
 
 
+class ContentNotFoundException(Exception):
+    pass
+
+
 class Elemental:
 
     def __init__(self, host, user, api_key):
@@ -44,31 +48,52 @@ class ElementalDelta(Elemental):
         return self.do_request('get', '/contents')
 
     # status can be [complete, active]
-    def find_contents_by_name(self, name):
+    def find_content_by_name(self, name):
         contents = self.do_request('get', '/contents?name=%s' % name)
 
         try:
             contents = xmltodict.parse(contents)['contents']['content']
         except KeyError:
             # It means that no content with matching name was found
-            return []
+            raise ContentNotFoundException('Not found content with provided name in this Delta!')
 
         if type(contents) is OrderedDict:
             contents = [contents]
-        
-        return [
-            {
-                'id': content['id'],
-                'name': content['name'],
-                'status': content['status']
-            }
-            for content in contents if content['name'] == name
-        ]
+
+        for content in contents:
+            if content['name'] == name:
+                # /contents?name= does not return filters
+                # so, we will do a new request to get content
+                # with its filters.
+                return self.find_content_by_id(content['id'])
+
+        raise ContentNotFoundException('Not found content with provided name in this Delta!')
 
     def delete_content(self, content_id):
         self.do_request('delete', '/contents/%s' % content_id)
 
+    def find_content_by_id(self, content_id):
+        content = self.do_request('get', '/contents/%s' % content_id)
+        
+        try:
+            content = xmltodict.parse(content)['content']
+        except KeyError:
+            # It means that no content with matching name was found
+            raise ContentNotFoundException('Not found content with provided id in this Delta!')
             
+        filters = [{
+            'id': filter_['id'],
+            'filter_type': filter_['filter_type'],
+            'url_extension': filter_['url_extension']
+        } for filter_ in content['filters']['filter']]
+
+        return {
+            'id': content['id'],
+            'name': content['name'],
+            'status': content['status'],
+            'filters': filters
+        }
+
 
 class ElementalLive(Elemental):
     pass
