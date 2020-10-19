@@ -24,7 +24,7 @@ class Elemental:
                         hashlib.md5((complete_url + self.user + self.api_key + expires).
                         encode('utf-8')).hexdigest()).encode('utf-8')).hexdigest()
 
-    def do_request(self, method, path):
+    def do_request(self, method, path, data=None):
         expires = str(int(time.time()) + 60)
 
         complete_url = '%s%s' % (self.base_url, path)
@@ -37,7 +37,10 @@ class Elemental:
             'Content-type': 'application/xml'
         }
         
-        r = requests.request(method=method, url=complete_url, headers=headers)
+        r = requests.request(method=method, 
+                             url=complete_url, 
+                             headers=headers,
+                             data=data)
 
         return r.text
 
@@ -93,6 +96,12 @@ class ElementalDelta(Elemental):
             'status': content['status'],
             'filters': filters
         }
+
+    def update_filter(self, xml, content_id, filter_id):
+
+        self.do_request('put', 
+                        '/contents/%s/filters/%s' % (content_id, filter_id),
+                        data=xml)
 
 
 class ElementalLive(Elemental):
