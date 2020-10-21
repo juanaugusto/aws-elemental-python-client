@@ -10,6 +10,10 @@ class ContentNotFoundException(Exception):
     pass
 
 
+class FilterNotFoundException(Exception):
+    pass
+
+
 class Elemental:
 
     def __init__(self, host, user, api_key):
@@ -97,11 +101,26 @@ class ElementalDelta(Elemental):
             'filters': filters
         }
 
+    def get_filter_by_id(self, content_id, filter_id):
+        
+        filter_ = self.do_request('get', '/contents/%s/filters/%s' % (content_id, filter_id))
+
+        try:
+            filter_ = xmltodict.parse(filter_)['filter']
+        except KeyError:
+            # It means that no content with matching name was found
+            raise FilterNotFoundException('Not found filter with provided id in this Delta!')
+
+        return {
+            'id': filter_['id'],
+            'default_endpoint_uri': filter_['default_endpoint_uri']
+        }
+
     def update_filter(self, xml, content_id, filter_id):
 
         self.do_request('put', 
                         '/contents/%s/filters/%s' % (content_id, filter_id),
-                        data=xml)
+                        data=xmltodict.unparse(xml))
 
 
 class ElementalLive(Elemental):
