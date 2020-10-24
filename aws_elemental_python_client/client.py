@@ -73,9 +73,6 @@ class Elemental:
 
 class ElementalDelta(Elemental):
 
-    def get_contents(self):
-        return self.do_request('get', '/contents')
-
     # status can be [complete, active]
     def find_content_by_name(self, name):
         try:
