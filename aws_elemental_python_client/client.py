@@ -129,20 +129,6 @@ class ElementalDelta(Elemental):
             'filters': filters
         }
 
-    def get_filter_by_id(self, content_id, filter_id):
-        
-        try:
-            filter_ = self.do_request('get', '/contents/%s/filters/%s' % (content_id, filter_id))
-        except ElementalHTTP404Error as e:
-            raise FilterNotFoundException('Not found filter with provided id in this Delta!')
-
-        filter_ = xmltodict.parse(filter_)['filter']
-
-        return {
-            'id': filter_['id'],
-            'default_endpoint_uri': filter_['default_endpoint_uri']
-        }
-
     def update_filter(self, xml, content_id, filter_id):
 
         self.do_request('put', 
