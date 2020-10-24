@@ -8,7 +8,7 @@ with open('requirements.txt') as f:
 
 setuptools.setup(
     name="aws-elemental-python-client", # Replace with your own username
-    version="0.0.1",
+    version="1.0.0",
     author="Juan Augusto Santos de Paula",
     author_email="jotaugusto93@gmail.com",
     description="Python Client for manage AWS Elemental Appliances (Delta, Live, Conductor)",
