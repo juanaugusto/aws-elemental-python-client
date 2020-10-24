@@ -14,6 +14,10 @@ class FilterNotFoundException(Exception):
     pass
 
 
+class ElementalHTTPError(Exception):
+    pass
+
+
 class Elemental:
 
     def __init__(self, host, user, api_key):
@@ -45,6 +49,13 @@ class Elemental:
                              url=complete_url, 
                              headers=headers,
                              data=data)
+
+        try:
+            r.raise_for_status()
+        except requests.exceptions.HTTPError:
+            raise ElementalHTTPError(
+                'Status: %s -  Error Message: %s' % (r.status_code, r.text)
+            )
 
         return r.text
 
